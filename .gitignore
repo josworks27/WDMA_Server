@@ -1,0 +1,9 @@
+# modules
+node_modules/
+
+# eslint & prettier config
+.eslintrc.json
+.prettierrc.json
+
+# etc
+package-lock.json
