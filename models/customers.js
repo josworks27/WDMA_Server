@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   customers.associate = function (models) {
     // associations can be defined here
+    models.customers.hasMany(models.events);
   };
   return customers;
 };

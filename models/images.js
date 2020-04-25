@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   images.associate = function (models) {
     // associations can be defined here
+    models.images.hasOne(models.dresses);
   };
   return images;
 };

@@ -20,11 +20,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false,
       },
+      storeId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {}
   );
   users.associate = function (models) {
     // associations can be defined here
+    models.users.hasMany(models.chatters);
+    models.users.hasMany(models.events);
+
+    users.belongsTo(models.stores, {
+      foreignKey: 'storeId',
+    });
   };
   return users;
 };

@@ -14,11 +14,35 @@ module.exports = {
         allowNull: false,
       },
       date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: false,
       },
       details: {
         type: Sequelize.TEXT,
+      },
+      dressId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'dresses',
+          key: 'id',
+        },
+      },
+      userId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      customerId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'customers',
+          key: 'id',
+        },
       },
       createdAt: {
         allowNull: false,
