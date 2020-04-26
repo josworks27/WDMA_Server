@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const chatters = sequelize.define(
-    'chatters',
+  const chats = sequelize.define(
+    'chats',
     {
       log: {
         type: DataTypes.TEXT,
@@ -15,11 +15,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     {}
   );
-  chatters.associate = function (models) {
+  chats.associate = function (models) {
     // associations can be defined here
-    chatters.belongsTo(models.users, {
+    chats.belongsTo(models.users, {
       foreignKey: 'userId',
     });
   };
-  return chatters;
+  return chats;
 };

@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   users.associate = function (models) {
     // associations can be defined here
-    models.users.hasMany(models.chatters);
+    models.users.hasMany(models.chats);
     models.users.hasMany(models.events);
 
     users.belongsTo(models.stores, {
