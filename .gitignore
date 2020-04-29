@@ -5,5 +5,8 @@ node_modules/
 .eslintrc.json
 .prettierrc.json
 
+# dotenv
+.env
+
 # etc
 package-lock.json
