@@ -3,7 +3,7 @@ require('dotenv').config();
 
 module.exports = {
   // * 관리자 등록 전, 메일 인증 모듈
-  emailAuth: (email, authNumber) => {
+  sendEmail: (email, subject, content) => {
     // nodemailer로 전송
     const main = async () => {
       let transporter = nodemailer.createTransport({
@@ -21,9 +21,9 @@ module.exports = {
       await transporter.sendMail({
         from: `"WDMA Team" <${process.env.NODEMAILER_USER}>`,
         to: email,
-        subject: 'WDMA Auth Number',
-        text: authNumber,
-        html: `<b>${authNumber}</b>`,
+        subject: subject,
+        text: content,
+        html: `<b>${content}</b>`,
       });
     };
 

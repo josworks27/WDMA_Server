@@ -21,7 +21,7 @@ module.exports = {
 
       // 이메일: 인증번호 임시 저장
       authNumberStorage[email] = generatedAuthNumber;
-      mailHelper.emailAuth(email, generatedAuthNumber);
+      mailHelper.sendEmail(email, 'WDMA Auth Number', generatedAuthNumber);
 
       res.status(200).json({
         status: 'Success',
@@ -35,20 +35,28 @@ module.exports = {
   postAuthCheck: (req, res) => {
     const { email, authNumber } = req.body;
 
-    if (authNumberStorage[email] === authNumber) {
-      delete authNumberStorage[email];
-
-      res.status(200).json({
-        status: 'Success',
-        code: 200,
-        message: 'Correct Auth Number',
-      });
-    } else {
+    if (!email || !authNumber) {
       res.status(400).json({
         status: 'Fail',
         code: 400,
-        message: 'Incorrect Auth Number',
+        message: 'Invalid request',
       });
+    } else {
+      if (authNumberStorage[email] === authNumber) {
+        delete authNumberStorage[email];
+
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          message: 'Correct Auth Number',
+        });
+      } else {
+        res.status(400).json({
+          status: 'Fail',
+          code: 400,
+          message: 'Incorrect Auth Number',
+        });
+      }
     }
   },
 };
