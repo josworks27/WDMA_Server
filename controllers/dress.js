@@ -50,50 +50,64 @@ module.exports = {
           message: 'Invalid requset',
         });
       } else {
-        const storeResult = await stores.findOne({
-          where: { name: store },
-          attributes: ['id'],
+        // 이미 있는 모델인지 확인
+        const dressResult = await dresses.findOne({
+          where: { model: model },
           raw: true,
         });
 
-        // 드레스 추가
-        const newDressResult = await dresses.create({
-          model: model,
-          price: price,
-          accessoryOne: accessoryOne,
-          accessoryTwo: accessoryTwo,
-          accessoryThree: accessoryThree,
-          storeId: storeResult['id'],
-        });
+        if (dressResult) {
+          res.status(409).json({
+            status: 'Fail',
+            code: 409,
+            message: 'Existing dress',
+          });
+        } else {
+          const storeResult = await stores.findOne({
+            where: { name: store },
+            attributes: ['id'],
+            raw: true,
+          });
 
-        const newDressId = newDressResult.dataValues.id;
+          // 드레스 추가
+          const newDressResult = await dresses.create({
+            model: model,
+            price: price,
+            accessoryOne: accessoryOne,
+            accessoryTwo: accessoryTwo,
+            accessoryThree: accessoryThree,
+            storeId: storeResult['id'],
+          });
 
-        // 이미지 추가
-        for (let i = 0; i < req.files.length; i++) {
-          const isMain = req.files[i].originalname.split('.');
+          const newDressId = newDressResult.dataValues.id;
 
-          if (isMain[0] === 'main') {
-            await images.create({
-              filePath: req.files[i].location,
-              fileName: req.files[i].originalname,
-              mainImage: true,
-              dressId: newDressId,
-            });
-          } else {
-            await images.create({
-              filePath: req.files[i].location,
-              fileName: req.files[i].originalname,
-              mainImage: false,
-              dressId: newDressId,
-            });
+          // 이미지 추가
+          for (let i = 0; i < req.files.length; i++) {
+            const isMain = req.files[i].originalname.split('.');
+
+            if (isMain[0] === 'main') {
+              await images.create({
+                filePath: req.files[i].location,
+                fileName: req.files[i].originalname,
+                mainImage: true,
+                dressId: newDressId,
+              });
+            } else {
+              await images.create({
+                filePath: req.files[i].location,
+                fileName: req.files[i].originalname,
+                mainImage: false,
+                dressId: newDressId,
+              });
+            }
           }
-        }
 
-        res.status(200).json({
-          status: 'Success',
-          code: 200,
-          message: newDressId,
-        });
+          res.status(200).json({
+            status: 'Success',
+            code: 200,
+            message: newDressId,
+          });
+        }
       }
     } catch (err) {
       res.status(500).json({
@@ -108,15 +122,53 @@ module.exports = {
   postDressesSearch: async (req, res) => {
     // 모델명으로 드레스 찾기
     // 해당하는 드레스의 메인 이미지 filePath, 모델명 응답하기
-    // try {
-    // } catch (err) {
-    //   res.status(500).json({
-    //     status: 'Fail',
-    //     code: 500,
-    //     message: err.name,
-    //   });
-    // }
-    res.end();
+    const { model } = req.body;
+
+    try {
+      if (!model) {
+        res.status(400).json({
+          status: 'Fail',
+          code: 400,
+          message: 'Invalid requset',
+        });
+      } else {
+        const dressResult = await dresses.findAll({
+          where: { model: model },
+          attributes: ['model'],
+          include: [
+            {
+              model: images,
+              required: false,
+              where: {
+                mainImage: true,
+              },
+              attributes: ['filePath'],
+            },
+          ],
+          raw: true,
+        });
+
+        if (dressResult.length === 0) {
+          res.status(404).json({
+            status: 'Fail',
+            code: 404,
+            message: 'Not found',
+          });
+        } else {
+          res.status(200).json({
+            status: 'Success',
+            code: 200,
+            data: dressResult,
+          });
+        }
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
   // * GET: /dresses/stats
