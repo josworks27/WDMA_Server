@@ -16,12 +16,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false,
       },
+      dressId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {}
   );
   images.associate = function (models) {
     // associations can be defined here
-    models.images.hasOne(models.dresses);
+    images.belongsTo(models.dresses, {
+      foreignKey: 'dressId',
+    });
   };
   return images;
 };

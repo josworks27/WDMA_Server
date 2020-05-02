@@ -12,20 +12,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      accesoryOne: {
+      accessoryOne: {
         type: DataTypes.STRING,
       },
-      accesoryTwo: {
+      accessoryTwo: {
         type: DataTypes.STRING,
       },
-      accesoryThree: {
+      accessoryThree: {
         type: DataTypes.STRING,
       },
       storeId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      imageId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -35,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   dresses.associate = function (models) {
     // associations can be defined here
     models.dresses.hasMany(models.events);
+    models.dresses.hasMany(models.images);
 
     dresses.belongsTo(models.stores, {
       foreignKey: 'storeId',

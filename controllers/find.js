@@ -92,7 +92,7 @@ module.exports = {
             res.status(404).json({
               status: 'Fail',
               code: 404,
-              message: 'Incorrect Password',
+              message: 'Not found',
             });
           }
         } else {

@@ -17,13 +17,13 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      accesoryOne: {
+      accessoryOne: {
         type: Sequelize.STRING,
       },
-      accesoryTwo: {
+      accessoryTwo: {
         type: Sequelize.STRING,
       },
-      accesoryThree: {
+      accessoryThree: {
         type: Sequelize.STRING,
       },
       storeId: {
@@ -31,14 +31,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: {
           model: 'stores',
-          key: 'id',
-        },
-      },
-      imageId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'images',
           key: 'id',
         },
       },

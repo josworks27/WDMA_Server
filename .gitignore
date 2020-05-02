@@ -8,5 +8,8 @@ node_modules/
 # dotenv
 .env
 
+# AWS
+config/awsconfig.json
+
 # etc
 package-lock.json
