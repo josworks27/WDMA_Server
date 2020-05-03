@@ -13,8 +13,8 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      age: {
-        type: Sequelize.INTEGER,
+      birth: {
+        type: Sequelize.DATEONLY,
         allowNull: false,
       },
       gender: {

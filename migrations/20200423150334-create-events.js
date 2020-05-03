@@ -21,23 +21,22 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       dressId: {
-        allowNull: false,
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'dresses',
           key: 'id',
         },
       },
       userId: {
-        allowNull: false,
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'users',
           key: 'id',
         },
       },
       customerId: {
-        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: 'customers',

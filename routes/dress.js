@@ -38,16 +38,24 @@ dressRouter.post(
 );
 dressRouter.post('/search', authChecker, dressCtrl.postDressesSearch);
 dressRouter.get('/stats', authChecker, dressCtrl.getDressesStats);
-dressRouter.get('/:id', authChecker, dressCtrl.getDressDetail);
+dressRouter.get('/:dressId', authChecker, dressCtrl.getDressDetail);
 dressRouter.put(
-  '/:id',
+  '/:dressId',
   authChecker,
   upload.array('images', 3),
   dressCtrl.putDressDetail
 );
-dressRouter.delete('/:id', authChecker, dressCtrl.deleteDressDetail);
-dressRouter.post('/:id/events', authChecker, dressCtrl.postDressEvent);
-dressRouter.put('/:id/events/:id', authChecker, dressCtrl.putDressEvent);
-dressRouter.delete('/:id/events/:id', authChecker, dressCtrl.deleteDressEvent);
+dressRouter.delete('/:dressId', authChecker, dressCtrl.deleteDressDetail);
+dressRouter.post('/:dressId/events', authChecker, dressCtrl.postDressEvent);
+dressRouter.put(
+  '/:dressId/events/:eventId',
+  authChecker,
+  dressCtrl.putDressEvent
+);
+dressRouter.delete(
+  '/:dressId/events/:eventId',
+  authChecker,
+  dressCtrl.deleteDressEvent
+);
 
 module.exports = dressRouter;

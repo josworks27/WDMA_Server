@@ -1,4 +1,6 @@
-const { dresses, images, stores } = require('../models');
+const jwt = require('jsonwebtoken');
+const { dresses, images, stores, events, customers } = require('../models');
+require('dotenv').config();
 
 module.exports = {
   // * GET: /dresses
@@ -120,8 +122,6 @@ module.exports = {
 
   // * POST: /dresses/search
   postDressesSearch: async (req, res) => {
-    // 모델명으로 드레스 찾기
-    // 해당하는 드레스의 메인 이미지 filePath, 모델명 응답하기
     const { model } = req.body;
 
     try {
@@ -176,33 +176,377 @@ module.exports = {
     res.send('get dresses stats');
   },
 
-  // * GET: /dresses/:id
+  // * GET: /dresses/:dressId
   getDressDetail: (req, res) => {
+    // 드레스 상세
     res.send('get dress detail');
   },
 
-  // * PUT: /dresses/:id
+  // * PUT: /dresses/:dressId
+  // 드레스 상세 수정
   putDressDetail: (req, res) => {
     res.send('put dress detail');
   },
 
-  // * DELETE: /dresses/:id
+  // * DELETE: /dresses/:dressId
   deleteDressDetail: (req, res) => {
+    // 드레스 삭제
     res.send('delete dress detail');
   },
 
-  // * POST: /dresses/:id/events
-  postDressEvent: (req, res) => {
-    res.send('post dressses events');
+  // * POST: /dresses/:dressId/events
+  postDressEvent: async (req, res) => {
+    // ! Socket.io
+    // event 생성
+    // req.body 확인
+    // DB 모델에 insert => events, customers
+    const {
+      eventType,
+      date,
+      details,
+      customerName,
+      customerBirth,
+      customerGender,
+    } = req.body;
+
+    const { dressId } = req.params;
+    const token = req.headers.authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    try {
+      if (!eventType || !date) {
+        res.status(400).json({
+          status: 'Fail',
+          code: 400,
+          message: 'Invalid requset',
+        });
+      } else {
+        if (eventType === 'customerRent' || eventType === 'fitting') {
+          const [customer] = await customers.findOrCreate({
+            where: {
+              name: customerName,
+              birth: customerBirth,
+              gender: customerGender,
+            },
+            defaults: {
+              name: customerName,
+              birth: customerBirth,
+              gender: customerGender,
+            },
+          });
+
+          const newEventResult = await events.create({
+            type: eventType,
+            date: date,
+            details: details,
+            dressId: dressId,
+            userId: decoded.userId,
+            customerId: customer.dataValues.id,
+          });
+
+          res.status(200).json({
+            status: 'Success',
+            code: 200,
+            eventId: newEventResult.dataValues.id,
+          });
+        } else if (eventType === 'cleaning' || eventType === 'storeRent') {
+          const newEventResult = await events.create({
+            type: eventType,
+            date: date,
+            details: details,
+            dressId: dressId,
+            userId: decoded.userId,
+            customerId: null,
+          });
+
+          res.status(200).json({
+            status: 'Success',
+            code: 200,
+            eventId: newEventResult.dataValues.id,
+          });
+        }
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
-  // * PUT: /dresses/:id/events/:id
-  putDressEvent: (req, res) => {
-    res.send('put dressses events');
+  // * PUT: /dresses/:dressId/events/:eventId
+  putDressEvent: async (req, res) => {
+    // ! Socket.io
+    // event 수정
+    // req.body 확인
+    // events update 하기
+    const {
+      eventType,
+      date,
+      details,
+      customerName,
+      customerBirth,
+      customerGender,
+    } = req.body;
+
+    const { dressId, eventId } = req.params;
+
+    try {
+      if (!eventType || !date) {
+        res.status(400).json({
+          status: 'Fail',
+          code: 400,
+          message: 'Invalid requset',
+        });
+      } else {
+        // ! 기존 이벤트 데이터 찾기
+        const findEventResult = await events.findOne({
+          where: { id: eventId, dressId: dressId },
+          include: [{ model: customers }],
+          raw: true,
+        });
+
+        if (eventType === 'customerRent' || eventType === 'fitting') {
+          // 원래 대여, 시착일 때
+          // 이벤트, 고객정보 변경 사항 업데이트
+          if (
+            findEventResult.type === 'customerRent' ||
+            findEventResult.type === 'fitting'
+          ) {
+            // 변경사항 업데이트
+            if (
+              findEventResult.type !== eventType ||
+              findEventResult.date !== date ||
+              findEventResult.details !== details
+            ) {
+              await events.update(
+                {
+                  type: eventType,
+                  date: date,
+                  details: details,
+                },
+                {
+                  where: {
+                    id: findEventResult.id,
+                  },
+                }
+              );
+            }
+
+            if (
+              findEventResult['customer.name'] !== customerName ||
+              findEventResult['customer.birth'] !== customerBirth ||
+              findEventResult['customer.gender'] !== customerGender
+            ) {
+              const [customer, created] = await customers.findOrCreate({
+                where: {
+                  name: customerName,
+                  birth: customerBirth,
+                  gender: customerGender,
+                },
+                defaults: {
+                  name: customerName,
+                  birth: customerBirth,
+                  gender: customerGender,
+                },
+              });
+
+              if (!created) {
+                await events.update(
+                  {
+                    customerId: customer.id,
+                  },
+                  {
+                    where: {
+                      id: findEventResult.id,
+                    },
+                  }
+                );
+              } else {
+                // 새로 만든 고객정보 찾아서 id 넣기
+                const newCustomerResult = await customers.findOne({
+                  where: {
+                    name: customerName,
+                    birth: customerBirth,
+                    gender: customerGender,
+                  },
+                  raw: true,
+                });
+
+                await events.update(
+                  {
+                    customerId: newCustomerResult.id,
+                  },
+                  {
+                    where: {
+                      id: findEventResult.id,
+                    },
+                  }
+                );
+              }
+            }
+
+            res.status(200).json({
+              status: 'Success',
+              code: 200,
+              message: '기존: 대여, 시착 / 변경: 대여, 시착',
+            });
+          } else {
+            // ! 세탁, 지점대여 => 대여, 시착
+            // 고객정보가 없으니까 고객정보 findOrCreate하고 이벤트의 customerId에 id 넣기
+            // 변경사항 업데이트
+            if (
+              findEventResult.type !== eventType ||
+              findEventResult.date !== date ||
+              findEventResult.details !== details
+            ) {
+              await events.update(
+                {
+                  type: eventType,
+                  date: date,
+                  details: details,
+                },
+                {
+                  where: {
+                    id: findEventResult.id,
+                  },
+                }
+              );
+            }
+
+            const [customer, created] = await customers.findOrCreate({
+              where: {
+                name: customerName,
+                birth: customerBirth,
+                gender: customerGender,
+              },
+              defaults: {
+                name: customerName,
+                birth: customerBirth,
+                gender: customerGender,
+              },
+            });
+
+            if (!created) {
+              await events.update(
+                {
+                  customerId: customer.id,
+                },
+                {
+                  where: {
+                    id: findEventResult.id,
+                  },
+                }
+              );
+            } else {
+              // 새로 만든 고객정보 찾아서 id 넣기
+              const newCustomerResult = await customers.findOne({
+                where: {
+                  name: customerName,
+                  birth: customerBirth,
+                  gender: customerGender,
+                },
+                raw: true,
+              });
+
+              await events.update(
+                {
+                  customerId: created.id,
+                },
+                {
+                  where: {
+                    id: newCustomerResult.id,
+                  },
+                }
+              );
+            }
+
+            res.status(200).json({
+              status: 'Success',
+              code: 200,
+              message: '기존: 세탁, 지점대여 / 변경: 대여, 시착',
+            });
+          }
+        } else if (eventType === 'cleaning' || eventType === 'storeRent') {
+          // ! 세탁, 지점대여 => 세탁, 지점대여
+          // 이벤트만 변경, 고객정보는 null 그대로 두기
+          if (
+            findEventResult.type === 'cleaning' ||
+            findEventResult.type === 'storeRent'
+          ) {
+            // 변경사항 업데이트
+            if (
+              findEventResult.type !== eventType ||
+              findEventResult.date !== date ||
+              findEventResult.details !== details
+            ) {
+              await events.update(
+                {
+                  type: eventType,
+                  date: date,
+                  details: details,
+                  customerId: null,
+                },
+                {
+                  where: {
+                    id: findEventResult.id,
+                  },
+                }
+              );
+            }
+
+            res.status(200).json({
+              status: 'Success',
+              code: 200,
+              message: '기존: 세탁, 지점대여 / 변경: 세탁, 지점대여',
+            });
+          } else {
+            // ! 대여, 시착 => 세탁, 지점대여
+            // 세탁, 지점대여로 변경
+            // 고객정보 null로 바꾸기
+            // 변경사항 업데이트
+            if (
+              findEventResult.type !== eventType ||
+              findEventResult.date !== date ||
+              findEventResult.details !== details
+            ) {
+              await events.update(
+                {
+                  type: eventType,
+                  date: date,
+                  details: details,
+                  customerId: null,
+                },
+                {
+                  where: {
+                    id: findEventResult.id,
+                  },
+                }
+              );
+            }
+
+            res.status(200).json({
+              status: 'Success',
+              code: 200,
+              message: '기존: 대여, 시착 / 변경: 세탁, 지점대여',
+            });
+          }
+        }
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
-  // * DELETE: /dresses/:id/events/:id
+  // * DELETE: /dresses/:dressId/events/:eventId
   deleteDressEvent: (req, res) => {
+    // ! Socket.io
+    // event 삭제
     res.send('delete dressses events');
   },
 };
