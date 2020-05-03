@@ -544,9 +544,38 @@ module.exports = {
   },
 
   // * DELETE: /dresses/:dressId/events/:eventId
-  deleteDressEvent: (req, res) => {
+  deleteDressEvent: async (req, res) => {
     // ! Socket.io
     // event 삭제
-    res.send('delete dressses events');
+    const { dressId, eventId } = req.params;
+
+    try {
+      const deletedEventResult = await events.destroy({
+        where: {
+          id: eventId,
+          dressId: dressId,
+        },
+      });
+
+      if (deletedEventResult) {
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          message: 'Deleted event data',
+        });
+      } else {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Not found',
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 };
