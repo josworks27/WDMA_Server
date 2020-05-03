@@ -291,6 +291,8 @@ module.exports = {
     } = req.body;
 
     const { dressId, eventId } = req.params;
+    const token = req.headers.authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     try {
       if (!eventType || !date) {
@@ -325,6 +327,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
+                  userId: decoded.userId,
                 },
                 {
                   where: {
@@ -355,6 +358,7 @@ module.exports = {
               if (!created) {
                 await events.update(
                   {
+                    userId: decoded.userId,
                     customerId: customer.id,
                   },
                   {
@@ -376,6 +380,7 @@ module.exports = {
 
                 await events.update(
                   {
+                    userId: decoded.userId,
                     customerId: newCustomerResult.id,
                   },
                   {
@@ -406,6 +411,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
+                  userId: decoded.userId,
                 },
                 {
                   where: {
@@ -431,6 +437,7 @@ module.exports = {
             if (!created) {
               await events.update(
                 {
+                  userId: decoded.userId,
                   customerId: customer.id,
                 },
                 {
@@ -452,6 +459,7 @@ module.exports = {
 
               await events.update(
                 {
+                  userId: decoded.userId,
                   customerId: created.id,
                 },
                 {
@@ -486,6 +494,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
+                  userId: decoded.userId,
                   customerId: null,
                 },
                 {
@@ -516,6 +525,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
+                  userId: decoded.userId,
                   customerId: null,
                 },
                 {
