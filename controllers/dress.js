@@ -180,24 +180,42 @@ module.exports = {
 
   // * GET: /dresses/:dressId
   getDressDetail: async (req, res) => {
-    // 드레스 상세
     const { dressId } = req.params;
 
     try {
-      // dresses, events에서 리소스 가져오기
-      // 있으면? 리소스 응답
-      // 없으면? 없다고 응답
       const findDressResult = await dresses.findOne({
         where: { id: dressId },
-        include: [{ model: stores }],
+        include: [{ model: stores, attributes: ['name'] }],
+        attributes: [
+          'model',
+          'price',
+          'accessoryOne',
+          'accessoryTwo',
+          'accessoryThree',
+        ],
         raw: true,
       });
 
       const findEventsResult = await events.findAll({
         where: { dressId: dressId },
-        include: [{ model: customers }],
+        include: [
+          {
+            model: customers,
+            attributes: ['name', 'birth', 'gender'],
+          },
+        ],
+        attributes: ['type', 'date', 'details'],
         raw: true,
       });
+
+      // 이미지 가져오기
+      const findImagesResult = await images.findAll({
+        where: { dressId: dressId },
+        attributes: ['filePath', 'fileName'],
+        raw: true,
+      });
+
+      console.log(findImagesResult);
 
       if (!findDressResult || !findEventsResult) {
         res.status(404).json({
@@ -211,6 +229,7 @@ module.exports = {
           code: 200,
           dressData: findDressResult,
           eventData: findEventsResult,
+          imageData: findImagesResult,
         });
       }
     } catch (err) {
@@ -223,9 +242,95 @@ module.exports = {
   },
 
   // * PUT: /dresses/:dressId
-  // 드레스 상세 수정
-  putDressDetail: (req, res) => {
-    res.send('put dress detail');
+  putDressDetail: async (req, res) => {
+    const {
+      model,
+      price,
+      accessoryOne,
+      accessoryTwo,
+      accessoryThree,
+      store,
+    } = req.body;
+
+    const { dressId } = req.params;
+
+    try {
+      if (!model || !price || !store) {
+        res.status(400).json({
+          status: 'Fail',
+          code: 400,
+          message: 'Invalid requset',
+        });
+      } else {
+        if (req.files.length > 0) {
+          // 기존 이미지 삭제
+          await images.destroy({
+            where: {
+              dressId: dressId,
+            },
+          });
+
+          // 새 이미지 생성
+          for (let i = 0; i < req.files.length; i++) {
+            const isMain = req.files[i].originalname.split('.');
+
+            if (isMain[0] === 'main') {
+              await images.create({
+                filePath: req.files[i].location,
+                fileName: req.files[i].originalname,
+                mainImage: true,
+                dressId: dressId,
+              });
+            } else {
+              await images.create({
+                filePath: req.files[i].location,
+                fileName: req.files[i].originalname,
+                mainImage: false,
+                dressId: dressId,
+              });
+            }
+          }
+        }
+
+        const storeResult = await stores.findOne({
+          where: { name: store },
+          attributes: ['id'],
+          raw: true,
+        });
+
+        const updatedDressResult = await dresses.update(
+          {
+            model: model,
+            price: price,
+            accessoryOne: accessoryOne,
+            accessoryTwo: accessoryTwo,
+            accessoryThree: accessoryThree,
+            storeId: storeResult.id,
+          },
+          { where: { id: dressId } }
+        );
+
+        if (!updatedDressResult) {
+          res.status(404).json({
+            status: 'Fail',
+            code: 404,
+            message: 'Non-existent dress',
+          });
+        } else {
+          res.status(200).json({
+            status: 'Success',
+            code: 200,
+            message: 'Successfully updated',
+          });
+        }
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
   // * DELETE: /dresses/:dressId
@@ -237,9 +342,6 @@ module.exports = {
   // * POST: /dresses/:dressId/events
   postDressEvent: async (req, res) => {
     // ! Socket.io
-    // event 생성
-    // req.body 확인
-    // DB 모델에 insert => events, customers
     const {
       eventType,
       date,
@@ -318,9 +420,6 @@ module.exports = {
   // * PUT: /dresses/:dressId/events/:eventId
   putDressEvent: async (req, res) => {
     // ! Socket.io
-    // event 수정
-    // req.body 확인
-    // events update 하기
     const {
       eventType,
       date,
@@ -439,7 +538,6 @@ module.exports = {
             });
           } else {
             // ! 세탁, 지점대여 => 대여, 시착
-            // 고객정보가 없으니까 고객정보 findOrCreate하고 이벤트의 customerId에 id 넣기
             // 변경사항 업데이트
             if (
               findEventResult.type !== eventType ||
@@ -552,8 +650,6 @@ module.exports = {
             });
           } else {
             // ! 대여, 시착 => 세탁, 지점대여
-            // 세탁, 지점대여로 변경
-            // 고객정보 null로 바꾸기
             // 변경사항 업데이트
             if (
               findEventResult.type !== eventType ||
@@ -596,7 +692,6 @@ module.exports = {
   // * DELETE: /dresses/:dressId/events/:eventId
   deleteDressEvent: async (req, res) => {
     // ! Socket.io
-    // event 삭제
     const { dressId, eventId } = req.params;
 
     try {
