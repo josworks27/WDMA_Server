@@ -173,13 +173,53 @@ module.exports = {
 
   // * GET: /dresses/stats
   getDressesStats: (req, res) => {
+    // 드레스 통계
+    // 고객정보와 드레스 이벤트 연계해서 고민해보기
     res.send('get dresses stats');
   },
 
   // * GET: /dresses/:dressId
-  getDressDetail: (req, res) => {
+  getDressDetail: async (req, res) => {
     // 드레스 상세
-    res.send('get dress detail');
+    const { dressId } = req.params;
+
+    try {
+      // dresses, events에서 리소스 가져오기
+      // 있으면? 리소스 응답
+      // 없으면? 없다고 응답
+      const findDressResult = await dresses.findOne({
+        where: { id: dressId },
+        include: [{ model: stores }],
+        raw: true,
+      });
+
+      const findEventsResult = await events.findAll({
+        where: { dressId: dressId },
+        include: [{ model: customers }],
+        raw: true,
+      });
+
+      if (!findDressResult || !findEventsResult) {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Not found',
+        });
+      } else {
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          dressData: findDressResult,
+          eventData: findEventsResult,
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
   // * PUT: /dresses/:dressId
