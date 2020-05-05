@@ -174,7 +174,11 @@ module.exports = {
   // * GET: /dresses/stats
   getDressesStats: (req, res) => {
     // 드레스 통계
-    // 고객정보와 드레스 이벤트 연계해서 고민해보기
+    // 1. 드레스별 이벤트 랭킹
+    // 2. 모든 드레스 이벤트 랭킹
+    // 3. 성별 드레스 랭킹
+    // 4. 연령대별 드레스 랭킹
+
     res.send('get dresses stats');
   },
 
