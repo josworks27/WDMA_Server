@@ -22,8 +22,9 @@ module.exports = {
         allowNull: false,
       },
       dressId: {
-        allowNull: false,
         type: Sequelize.INTEGER,
+        allowNull: true,
+        onDelete: 'CASCADE',
         references: {
           model: 'dresses',
           key: 'id',

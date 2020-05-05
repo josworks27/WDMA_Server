@@ -334,9 +334,37 @@ module.exports = {
   },
 
   // * DELETE: /dresses/:dressId
-  deleteDressDetail: (req, res) => {
+  deleteDressDetail: async (req, res) => {
     // 드레스 삭제
-    res.send('delete dress detail');
+    const { dressId } = req.params;
+
+    try {
+      const deletedDressResult = await dresses.destroy({
+        where: {
+          id: dressId,
+        },
+      });
+
+      if (deletedDressResult) {
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          message: 'Successfully deleted',
+        });
+      } else {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Non-existent dress',
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err,
+      });
+    }
   },
 
   // * POST: /dresses/:dressId/events
