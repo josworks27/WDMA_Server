@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const { users, stores, dresses, events, customers } = require('../models');
-require('dotenv').config();
 
 module.exports = {
   // * GET: /users/:id
@@ -75,16 +74,12 @@ module.exports = {
     const { oldPass, newPass } = req.body;
     const { id } = req.params;
 
-    console.log(oldPass, newPass);
-
     try {
       const findPassResult = await users.findOne({
         where: { id: id },
         attributes: ['password'],
         raw: true,
       });
-
-      console.log(findPassResult);
 
       if (!findPassResult) {
         res.status(404).json({
@@ -98,8 +93,6 @@ module.exports = {
           oldPass,
           findPassResult.password
         );
-
-        console.log(isCorrectPassword);
 
         if (isCorrectPassword) {
           // 신규 비번으로 업데이트

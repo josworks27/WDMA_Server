@@ -172,14 +172,86 @@ module.exports = {
   },
 
   // * GET: /dresses/stats
-  getDressesStats: (req, res) => {
+  getDressesStats: async (req, res) => {
     // 드레스 통계
-    // 1. 드레스별 이벤트 랭킹
-    // 2. 모든 드레스 이벤트 랭킹
-    // 3. 성별 드레스 랭킹
-    // 4. 연령대별 드레스 랭킹
+    try {
+      // * 1. 드레스별 이벤트 랭킹
+      const allDressEvents = await events.findAll({
+        include: [{ model: dresses, attributes: ['model'] }],
+        order: [['dressId', 'ASC']],
+        raw: true,
+      });
 
-    res.send('get dresses stats');
+      // 드레스 모델별 분리
+      let statsByDress = [];
+      let tempStats = { model: null, stats: {} };
+
+      for (let i = 0; i < allDressEvents.length; i++) {
+        if (
+          tempStats['model'] === null ||
+          tempStats['model'] === allDressEvents[i]['dress.model']
+        ) {
+          // null 바꾸기
+          if (tempStats['model'] === null) {
+            tempStats['model'] = allDressEvents[i]['dress.model'];
+          }
+
+          // stats 처리
+          if (
+            Object.prototype.hasOwnProperty.call(
+              tempStats['stats'],
+              allDressEvents[i]['type']
+            )
+          ) {
+            tempStats['stats'][allDressEvents[i]['type']] += 1;
+          } else {
+            tempStats['stats'][allDressEvents[i]['type']] = 1;
+          }
+        } else {
+          statsByDress.push(tempStats);
+          tempStats = { model: null, stats: {} };
+
+          tempStats['model'] = allDressEvents[i]['dress.model'];
+          tempStats['stats'][allDressEvents[i]['type']] = 1;
+        }
+
+        if (i === allDressEvents.length - 1) {
+          statsByDress.push(tempStats);
+        }
+      }
+
+      // * 2. 모든 드레스 이벤트 랭킹
+      let statsByAllDress = {};
+      for (let i = 0; i < allDressEvents.length; i++) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            statsByAllDress,
+            allDressEvents[i]['type']
+          )
+        ) {
+          statsByAllDress[allDressEvents[i]['type']] += 1;
+        } else {
+          statsByAllDress[allDressEvents[i]['type']] = 1;
+        }
+      }
+
+      res.status(200).json({
+        status: 'Success',
+        code: 200,
+        statsData: {
+          statsByDress: statsByDress,
+          statsByAllDress: statsByAllDress,
+        },
+      });
+
+      // * 3. 연령대별 드레스 랭킹 (일단 보류, 향후 필요시 추가)
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
   },
 
   // * GET: /dresses/:dressId
@@ -218,8 +290,6 @@ module.exports = {
         attributes: ['filePath', 'fileName'],
         raw: true,
       });
-
-      console.log(findImagesResult);
 
       if (!findDressResult || !findEventsResult) {
         res.status(404).json({
