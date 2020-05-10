@@ -7,7 +7,7 @@ JavaScript, React, React Hooks, Redux, D3
 JavaScript, Express, Sequelize, MySQL, Multer, Bcrypt, JWT
 
 ## Etc
-dotenv, Socket.io, AWS
+dotenv, Socket.io, AWS(S3)
 
 # 프로젝트 진행 문서
 https://www.notion.so/WDMA-Wedding-Dress-Management-Application-618a3b782f7b4770b35087b69551c2c9
@@ -34,12 +34,12 @@ https://www.notion.so/WDMA-Wedding-Dress-Management-Application-618a3b782f7b4770
 * 등록된 모든 드레스 나열
 
 ## 드레스 추가
-* 모델명, 가격, 부속품(복수 입력), 관리점포 입력
+* 모델명, 가격, 부속품(1~3 종류), 관리점포 입력
 * 드레스 이미지 1~3장 업로드
 * 대표 이미지 선택
 
 ## 드레스 검색
-* 화면 이동 없는 방식 (모달창)
+* 화면 이동 없는 방식
 * 드레스 모델명 입력하면 해당하는 드레스만 표시
 
 ## 채팅
@@ -63,7 +63,7 @@ https://www.notion.so/WDMA-Wedding-Dress-Management-Application-618a3b782f7b4770
 ## 드레스 상세
 **신규 이벤트**
 * 드레스별 신규 이벤트 작성
-* 이벤트 종류 선택 (고객 대여, 시착, 세탁, 지점 대여, 그 외)
+* 이벤트 종류 선택 (고객 대여, 시착, 세탁, 지점 대여)
 * 이벤트별 세부 내용 입력
 
 **드레스 편집**
