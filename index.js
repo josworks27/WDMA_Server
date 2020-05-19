@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -27,6 +28,7 @@ app.use(
   })
 );
 app.use(morgan('dev'));
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 // Router 분기하기
 app.get('/', (req, res) => res.send('Hello WDMA!'));
