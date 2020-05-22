@@ -2,9 +2,34 @@ const { users, stores } = require('../models');
 const mailHelper = require('../helpers/mailHelper');
 
 module.exports = {
+  // * GET: /find
+  getFind: async (req, res) => {
+    // 스토어 리스트 보내주기
+    try {
+      const storesResult = await stores.findAll({
+        attributes: ['id', 'name'],
+        raw: true,
+      });
+
+      res.status(200).json({
+        status: 'Success',
+        code: 200,
+        data: storesResult,
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
+  },
+
   // * POST: /find
   postFind: async (req, res) => {
     const { name, store } = req.body;
+
+    console.log(name, store);
 
     try {
       if (!name || !store) {
@@ -30,7 +55,7 @@ module.exports = {
           raw: true,
         });
 
-        if (userData) {
+        if (userData.length > 0) {
           res.status(200).json({
             status: 'Success',
             code: 200,
