@@ -33,7 +33,9 @@ module.exports = {
           res.status(200).json({
             status: 'Success',
             code: 200,
-            message: result.id,
+            data: {
+              userId: result.id,
+            },
           });
         } else {
           res.status(500).json({

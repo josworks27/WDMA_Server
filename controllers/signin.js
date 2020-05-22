@@ -33,9 +33,11 @@ module.exports = {
           res.status(200).json({
             status: 'Success',
             code: 200,
-            token: token,
-            userId: userData.id,
-            userName: userData.name,
+            data: {
+              token: token,
+              userId: userData.id,
+              userName: userData.name,
+            },
           });
         } else {
           res.status(401).json({

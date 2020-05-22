@@ -6,6 +6,7 @@ module.exports = {
   // * POST: /auth
   postAuth: (req, res) => {
     const { email } = req.body;
+    console.log(email);
 
     if (!email) {
       res.status(400).json({
@@ -34,6 +35,7 @@ module.exports = {
   // * POST: /auth/check
   postAuthCheck: (req, res) => {
     const { email, authNumber } = req.body;
+    console.log(email, authNumber);
 
     if (!email || !authNumber) {
       res.status(400).json({

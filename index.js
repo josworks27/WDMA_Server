@@ -28,7 +28,13 @@ app.use(
   })
 );
 app.use(morgan('dev'));
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  })
+);
 
 // Router 분기하기
 app.get('/', (req, res) => res.send('Hello WDMA!'));
