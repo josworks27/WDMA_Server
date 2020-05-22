@@ -1,18 +1,24 @@
+const { stores, users } = require('../models');
 const mailHelper = require('../helpers/mailHelper');
 
 let authNumberStorage = {};
 
 module.exports = {
   // * POST: /auth
-  postAuth: (req, res) => {
+  postAuth: async (req, res) => {
     const { email } = req.body;
-    console.log(email);
 
-    if (!email) {
-      res.status(400).json({
+    // 이메일 존재 체크
+    let emailResult = await users.findOne({
+      where: { email: email },
+      raw: true,
+    });
+
+    if (emailResult) {
+      res.status(409).json({
         status: 'Fail',
-        code: 400,
-        message: 'Invalid request',
+        code: 409,
+        message: 'Existing email',
       });
     } else {
       // 인증번호 생성 모듈
@@ -27,15 +33,14 @@ module.exports = {
       res.status(200).json({
         status: 'Success',
         code: 200,
-        message: 'Sent email',
+        data: `${email}`,
       });
     }
   },
 
   // * POST: /auth/check
-  postAuthCheck: (req, res) => {
+  postAuthCheck: async (req, res) => {
     const { email, authNumber } = req.body;
-    console.log(email, authNumber);
 
     if (!email || !authNumber) {
       res.status(400).json({
@@ -47,10 +52,16 @@ module.exports = {
       if (authNumberStorage[email] === authNumber) {
         delete authNumberStorage[email];
 
+        // 점포 디비에서 가져와서 보내주기
+        const storesResult = await stores.findAll({
+          attributes: ['id', 'name'],
+          raw: true,
+        });
+
         res.status(200).json({
           status: 'Success',
           code: 200,
-          message: 'Correct Auth Number',
+          data: storesResult,
         });
       } else {
         res.status(400).json({
