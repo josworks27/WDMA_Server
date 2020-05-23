@@ -2,8 +2,8 @@ const { users, stores } = require('../models');
 const mailHelper = require('../helpers/mailHelper');
 
 module.exports = {
-  // * GET: /find
-  getFind: async (req, res) => {
+  // * GET: /forgot
+  getForgot: async (req, res) => {
     // 스토어 리스트 보내주기
     try {
       const storesResult = await stores.findAll({
@@ -25,8 +25,8 @@ module.exports = {
     }
   },
 
-  // * POST: /find
-  postFind: async (req, res) => {
+  // * POST: /forgot
+  postForgot: async (req, res) => {
     const { name, store } = req.body;
 
     console.log(name, store);
@@ -78,8 +78,8 @@ module.exports = {
     }
   },
 
-  // * PUT: /find
-  putFind: async (req, res) => {
+  // * PUT: /forgot
+  putForgot: async (req, res) => {
     const { email } = req.body;
 
     try {
