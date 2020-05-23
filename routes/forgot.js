@@ -5,8 +5,8 @@ const forgotRouter = express.Router();
 const forgotCtrl = require('../controllers/forgot');
 
 // Controller 분기하기
-forgotRouter.get('/', forgotCtrl.getFind);
-forgotRouter.post('/', forgotCtrl.postFind);
-forgotRouter.put('/', forgotCtrl.putFind);
+forgotRouter.get('/', forgotCtrl.getForgot);
+forgotRouter.post('/', forgotCtrl.postForgot);
+forgotRouter.put('/', forgotCtrl.putForgot);
 
 module.exports = forgotRouter;
