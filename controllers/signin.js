@@ -8,6 +8,8 @@ module.exports = {
   postSignin: async (req, res) => {
     const { email, password } = req.body;
 
+    console.log(email, password);
+
     try {
       const userCheckResult = await users.findOne({ where: { email: email } });
 
@@ -19,7 +21,8 @@ module.exports = {
         );
 
         if (isCorrectPassword) {
-          const token = jwt.sign(
+          console.log('1');
+          jwt.sign(
             {
               userId: userData.id,
               email: userData.email,
@@ -27,18 +30,26 @@ module.exports = {
             process.env.JWT_SECRET,
             {
               expiresIn: '6h',
+            },
+            (err, token) => {
+              const inOnehour = new Date(
+                Number(new Date()) + 1 * 60 * 60 * 1000
+              );
+              res.cookie('token', token, {
+                expires: inOnehour,
+                // httpOnly: true,
+              });
+
+              console.log('2');
+              res.status(200).json({
+                status: 'Success',
+                code: 200,
+                data: {
+                  token: token,
+                },
+              });
             }
           );
-
-          res.status(200).json({
-            status: 'Success',
-            code: 200,
-            data: {
-              token: token,
-              userId: userData.id,
-              userName: userData.name,
-            },
-          });
         } else {
           res.status(401).json({
             status: 'Fail',
