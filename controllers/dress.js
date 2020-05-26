@@ -263,6 +263,7 @@ module.exports = {
         where: { id: dressId },
         include: [{ model: stores, attributes: ['name'] }],
         attributes: [
+          'id',
           'model',
           'price',
           'accessoryOne',
@@ -277,21 +278,22 @@ module.exports = {
         include: [
           {
             model: customers,
-            attributes: ['name', 'birth', 'gender'],
+            attributes: ['id', 'name', 'birth', 'gender'],
           },
         ],
-        attributes: ['type', 'date', 'details'],
+        attributes: ['id', 'type', 'date', 'details'],
+        order: [['date', 'DESC']],
         raw: true,
       });
 
       // 이미지 가져오기
       const findImagesResult = await images.findAll({
         where: { dressId: dressId },
-        attributes: ['filePath', 'fileName'],
+        attributes: ['id', 'filePath', 'fileName'],
         raw: true,
       });
 
-      if (!findDressResult || !findEventsResult) {
+      if (!findDressResult) {
         res.status(404).json({
           status: 'Fail',
           code: 404,
@@ -454,7 +456,7 @@ module.exports = {
     } = req.body;
 
     const { dressId } = req.params;
-    const token = req.headers.authorization.split('Bearer ')[1];
+    const token = req.headers.cookie.split('token=')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     try {
@@ -532,7 +534,7 @@ module.exports = {
     } = req.body;
 
     const { dressId, eventId } = req.params;
-    const token = req.headers.authorization.split('Bearer ')[1];
+    const token = req.headers.cookie.split('token=')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     try {
