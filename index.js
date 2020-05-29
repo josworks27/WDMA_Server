@@ -17,6 +17,7 @@ const forgotRouter = require('./routes/forgot');
 const dressRouter = require('./routes/dress');
 const chatRouter = require('./routes/chat');
 const userRouter = require('./routes/user');
+const storeRouter = require('./routes/store');
 
 // Middleware 세팅
 app.use(helmet());
@@ -46,6 +47,7 @@ app.use('/forgot', forgotRouter);
 app.use('/dresses', dressRouter);
 app.use('/chat', chatRouter);
 app.use('/users', userRouter);
+app.use('/store', storeRouter);
 
 app.listen(PORT, () =>
   console.log(`WDMA app listening at http://localhost:${PORT}`)
