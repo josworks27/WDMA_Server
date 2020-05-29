@@ -6,7 +6,6 @@ const authChecker = require('../middlewares/authChecker');
 const userCtrl = require('../controllers/user');
 
 // Controller 분기하기
-userRouter.get('/store', userCtrl.getStore);
 userRouter.get('/:id', authChecker, userCtrl.getUsers);
 userRouter.put('/:id', authChecker, userCtrl.putUsers);
 

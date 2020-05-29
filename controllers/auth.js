@@ -1,4 +1,4 @@
-const { stores, users } = require('../models');
+const { users } = require('../models');
 const mailHelper = require('../helpers/mailHelper');
 
 let authNumberStorage = {};
@@ -53,15 +53,15 @@ module.exports = {
         delete authNumberStorage[email];
 
         // 점포 디비에서 가져와서 보내주기
-        const storesResult = await stores.findAll({
-          attributes: ['id', 'name'],
-          raw: true,
-        });
+        // const storesResult = await stores.findAll({
+        //   attributes: ['id', 'name'],
+        //   raw: true,
+        // });
 
         res.status(200).json({
           status: 'Success',
           code: 200,
-          data: storesResult,
+          message: 'Incorrect Auth Number',
         });
       } else {
         res.status(400).json({
