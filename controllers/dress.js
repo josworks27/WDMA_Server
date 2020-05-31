@@ -13,11 +13,13 @@ module.exports = {
           where: {
             mainImage: 1,
           },
-          required: true,
+          required: false,
           attributes: ['filePath'],
         },
         raw: true,
       });
+
+      console.log(dressesResult);
 
       res.status(200).json({
         status: 'Success',
@@ -44,45 +46,42 @@ module.exports = {
       store,
     } = req.body;
 
+    console.log('body ', req.body);
+    console.log('files ', req.files);
+
     try {
-      if (!model || !price || !store) {
-        res.status(400).json({
+      // 이미 있는 모델인지 확인
+      const dressResult = await dresses.findOne({
+        where: { model: model },
+        raw: true,
+      });
+
+      if (dressResult) {
+        res.status(409).json({
           status: 'Fail',
-          code: 400,
-          message: 'Invalid requset',
+          code: 409,
+          message: 'Existing dress',
         });
       } else {
-        // 이미 있는 모델인지 확인
-        const dressResult = await dresses.findOne({
-          where: { model: model },
+        const storeResult = await stores.findOne({
+          where: { name: store },
+          attributes: ['id'],
           raw: true,
         });
 
-        if (dressResult) {
-          res.status(409).json({
-            status: 'Fail',
-            code: 409,
-            message: 'Existing dress',
-          });
-        } else {
-          const storeResult = await stores.findOne({
-            where: { name: store },
-            attributes: ['id'],
-            raw: true,
-          });
+        // 드레스 추가
+        const newDressResult = await dresses.create({
+          model: model,
+          price: price,
+          accessoryOne: accessoryOne,
+          accessoryTwo: accessoryTwo,
+          accessoryThree: accessoryThree,
+          storeId: storeResult['id'],
+        });
 
-          // 드레스 추가
-          const newDressResult = await dresses.create({
-            model: model,
-            price: price,
-            accessoryOne: accessoryOne,
-            accessoryTwo: accessoryTwo,
-            accessoryThree: accessoryThree,
-            storeId: storeResult['id'],
-          });
+        const newDressId = newDressResult.dataValues.id;
 
-          const newDressId = newDressResult.dataValues.id;
-
+        if (req.files.length > 0) {
           // 이미지 추가
           for (let i = 0; i < req.files.length; i++) {
             const isMain = req.files[i].originalname.split('.');
@@ -103,13 +102,13 @@ module.exports = {
               });
             }
           }
-
-          res.status(200).json({
-            status: 'Success',
-            code: 200,
-            message: newDressId,
-          });
         }
+
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          data: newDressId,
+        });
       }
     } catch (err) {
       res.status(500).json({
@@ -339,7 +338,7 @@ module.exports = {
         });
       } else {
         if (req.files.length > 0) {
-          // 기존 이미지 삭제
+          // 새로운 이미지가 존재하면 기존 이미지 삭제하고 새로운 이미지 넣기
           await images.destroy({
             where: {
               dressId: dressId,
@@ -396,7 +395,7 @@ module.exports = {
           res.status(200).json({
             status: 'Success',
             code: 200,
-            message: 'Successfully updated',
+            data: updatedDressResult.dataValues.id,
           });
         }
       }
