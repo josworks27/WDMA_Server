@@ -29,8 +29,6 @@ module.exports = {
   postForgot: async (req, res) => {
     const { name, store } = req.body;
 
-    console.log(name, store);
-
     try {
       if (!name || !store) {
         res.status(400).json({

@@ -8,8 +8,6 @@ module.exports = {
   postSignin: async (req, res) => {
     const { email, password } = req.body;
 
-    console.log(email, password);
-
     try {
       const userCheckResult = await users.findOne({ where: { email: email } });
 
@@ -21,7 +19,6 @@ module.exports = {
         );
 
         if (isCorrectPassword) {
-          console.log('1');
           jwt.sign(
             {
               userId: userData.id,
@@ -40,7 +37,6 @@ module.exports = {
                 // httpOnly: true,
               });
 
-              console.log('2');
               res.status(200).json({
                 status: 'Success',
                 code: 200,

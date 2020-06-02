@@ -19,8 +19,6 @@ module.exports = {
         raw: true,
       });
 
-      console.log(dressesResult);
-
       res.status(200).json({
         status: 'Success',
         code: 200,
@@ -45,9 +43,6 @@ module.exports = {
       accessoryThree,
       store,
     } = req.body;
-
-    console.log('body ', req.body);
-    console.log('files ', req.files);
 
     try {
       // 이미 있는 모델인지 확인
