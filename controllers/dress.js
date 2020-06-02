@@ -119,42 +119,34 @@ module.exports = {
     const { model } = req.body;
 
     try {
-      if (!model) {
-        res.status(400).json({
+      const dressResult = await dresses.findAll({
+        where: { model: model },
+        attributes: ['id', 'model'],
+        include: [
+          {
+            model: images,
+            required: false,
+            where: {
+              mainImage: 1,
+            },
+            attributes: ['filePath'],
+          },
+        ],
+        raw: true,
+      });
+
+      if (dressResult.length === 0) {
+        res.status(404).json({
           status: 'Fail',
-          code: 400,
-          message: 'Invalid requset',
+          code: 404,
+          message: 'Not found',
         });
       } else {
-        const dressResult = await dresses.findAll({
-          where: { model: model },
-          attributes: ['model'],
-          include: [
-            {
-              model: images,
-              required: false,
-              where: {
-                mainImage: true,
-              },
-              attributes: ['filePath'],
-            },
-          ],
-          raw: true,
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          data: dressResult,
         });
-
-        if (dressResult.length === 0) {
-          res.status(404).json({
-            status: 'Fail',
-            code: 404,
-            message: 'Not found',
-          });
-        } else {
-          res.status(200).json({
-            status: 'Success',
-            code: 200,
-            data: dressResult,
-          });
-        }
       }
     } catch (err) {
       res.status(500).json({
