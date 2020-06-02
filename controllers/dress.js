@@ -330,74 +330,87 @@ module.exports = {
     const { dressId } = req.params;
 
     try {
-      if (!model || !price || !store) {
-        res.status(400).json({
-          status: 'Fail',
-          code: 400,
-          message: 'Invalid requset',
+      if (req.files.length > 0) {
+        // 새로운 이미지가 존재하면 기존 이미지 삭제하고 새로운 이미지 넣기
+        await images.destroy({
+          where: {
+            dressId: dressId,
+          },
         });
-      } else {
-        if (req.files.length > 0) {
-          // 새로운 이미지가 존재하면 기존 이미지 삭제하고 새로운 이미지 넣기
-          await images.destroy({
-            where: {
+
+        // 새 이미지 생성
+        for (let i = 0; i < req.files.length; i++) {
+          const isMain = req.files[i].originalname.split('.');
+
+          if (isMain[0] === 'main') {
+            await images.create({
+              filePath: req.files[i].location,
+              fileName: req.files[i].originalname,
+              mainImage: true,
               dressId: dressId,
-            },
-          });
-
-          // 새 이미지 생성
-          for (let i = 0; i < req.files.length; i++) {
-            const isMain = req.files[i].originalname.split('.');
-
-            if (isMain[0] === 'main') {
-              await images.create({
-                filePath: req.files[i].location,
-                fileName: req.files[i].originalname,
-                mainImage: true,
-                dressId: dressId,
-              });
-            } else {
-              await images.create({
-                filePath: req.files[i].location,
-                fileName: req.files[i].originalname,
-                mainImage: false,
-                dressId: dressId,
-              });
-            }
+            });
+          } else {
+            await images.create({
+              filePath: req.files[i].location,
+              fileName: req.files[i].originalname,
+              mainImage: false,
+              dressId: dressId,
+            });
           }
         }
+      }
 
-        const storeResult = await stores.findOne({
-          where: { name: store },
-          attributes: ['id'],
+      const storeResult = await stores.findOne({
+        where: { name: store },
+        attributes: ['id'],
+        raw: true,
+      });
+
+      const updatedDressResult = await dresses.update(
+        {
+          model: model,
+          price: price,
+          accessoryOne: accessoryOne,
+          accessoryTwo: accessoryTwo,
+          accessoryThree: accessoryThree,
+          storeId: storeResult.id,
+        },
+        { where: { id: dressId } }
+      );
+
+      if (updatedDressResult.length > 0) {
+        const findDressResult = await dresses.findOne({
+          where: { id: dressId },
+          include: [{ model: stores, attributes: ['name'] }],
+          attributes: [
+            'id',
+            'model',
+            'price',
+            'accessoryOne',
+            'accessoryTwo',
+            'accessoryThree',
+          ],
           raw: true,
         });
 
-        const updatedDressResult = await dresses.update(
-          {
-            model: model,
-            price: price,
-            accessoryOne: accessoryOne,
-            accessoryTwo: accessoryTwo,
-            accessoryThree: accessoryThree,
-            storeId: storeResult.id,
-          },
-          { where: { id: dressId } }
-        );
+        const findImagesResult = await images.findAll({
+          where: { dressId: dressId },
+          attributes: ['id', 'filePath', 'fileName'],
+          raw: true,
+        });
 
-        if (!updatedDressResult) {
-          res.status(404).json({
-            status: 'Fail',
-            code: 404,
-            message: 'Non-existent dress',
-          });
-        } else {
-          res.status(200).json({
-            status: 'Success',
-            code: 200,
-            data: updatedDressResult.dataValues.id,
-          });
-        }
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          dressData: findDressResult,
+          imageData: findImagesResult,
+        });
+      } else {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Non-existent dress',
+        });
       }
     } catch (err) {
       res.status(500).json({
