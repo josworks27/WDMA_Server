@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
   if (req.headers.cookie) {
     const token = req.headers.cookie.split('token=')[1];
 
-    jwt.verify(token, process.env.JWT_SECRET, (err) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         res.status(401).json({
           status: 'Fail',
@@ -13,6 +13,8 @@ module.exports = (req, res, next) => {
           message: 'Auth Error from authChecker',
         });
       } else {
+        req.user = { userId: decoded.userId, email: decoded.email };
+
         next();
       }
     });

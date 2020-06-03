@@ -2,17 +2,18 @@ const bcrypt = require('bcrypt');
 const { users, stores, dresses, events, customers } = require('../models');
 
 module.exports = {
-  // * GET: /users/:id
+  // * GET: /users
   getUsers: async (req, res) => {
     // 유저 정보 => 이메일, 이름, 소속점포
     // 이벤트 정보 => 자신이 작성한 모든 드레스의 이벤트 내역 (최신순)
     //    날짜(최신순), 모델(A-Z), 이벤트(최신순)
-    const { id } = req.params;
+
+    const { userId } = req.user;
 
     try {
       // 유저 정보 가져오기
       const findUserResult = await users.findOne({
-        where: { id: id },
+        where: { id: userId },
         attributes: ['email', 'name'],
         include: {
           model: stores,
@@ -30,7 +31,7 @@ module.exports = {
       } else {
         // 이벤트 정보 가져오기
         const findEventsResult = await events.findAll({
-          where: { userId: id },
+          where: { userId: userId },
           order: [['date', 'DESC']],
           include: [
             { model: dresses, attributes: ['model'] },
@@ -64,19 +65,65 @@ module.exports = {
     }
   },
 
-  // * PUT: /users/:id
+  // * PUT: /users
   putUsers: async (req, res) => {
-    // * 계정 비밀번호 변경
-    // req.body로 기존 비밀번호와 신규 비밀번호 확인
-    // id에 맞는 유저 리소소를 가져와서 기존 비밀번호가 맞는지 먼저 확인.
-    // 맞으면? 신규 비밀번호로 업데이트 후 응답
-    // 틀리면? 틀리다는 응답
-    const { oldPass, newPass } = req.body;
-    const { id } = req.params;
+    const { name, store, manager } = req.body;
+    const { userId } = req.user;
+
+    console.log(req.body, userId);
+
+    try {
+      const findStoreResult = await stores.findOne({
+        where: {
+          name: store,
+        },
+        attributes: ['id'],
+        raw: true,
+      });
+
+      const updateUserResult = await users.update(
+        {
+          name: name,
+          storeId: findStoreResult.id,
+          manager: manager,
+        },
+        {
+          where: {
+            id: userId,
+          },
+        }
+      );
+
+      if (updateUserResult.length === 0) {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Not found',
+        });
+      } else {
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          message: 'Account was updated',
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
+  },
+
+  // * PUT: /users/password
+  putPassword: async (req, res) => {
+    const { currPassword, newPassword } = req.body;
+    const { userId } = req.user;
 
     try {
       const findPassResult = await users.findOne({
-        where: { id: id },
+        where: { id: userId },
         attributes: ['password'],
         raw: true,
       });
@@ -88,19 +135,17 @@ module.exports = {
           message: 'Non-existent user',
         });
       } else {
-        // 비번 확인
         const isCorrectPassword = await bcrypt.compare(
-          oldPass,
+          currPassword,
           findPassResult.password
         );
 
         if (isCorrectPassword) {
-          // 신규 비번으로 업데이트
           await users.update(
             {
-              password: newPass,
+              password: newPassword,
             },
-            { where: { id: id } }
+            { where: { id: userId } }
           );
 
           res.status(200).json({
@@ -116,29 +161,6 @@ module.exports = {
           });
         }
       }
-    } catch (err) {
-      res.status(500).json({
-        status: 'Fail',
-        code: 500,
-        message: err.name,
-      });
-    }
-  },
-
-  // * GET: /store
-  getStore: async (req, res) => {
-    // 스토어 리스트 응답하기
-    try {
-      const storeList = await stores.findAll({
-        attributes: ['id', 'name'],
-        raw: true,
-      });
-
-      res.status(200).json({
-        status: 'Success',
-        code: 200,
-        data: storeList,
-      });
     } catch (err) {
       res.status(500).json({
         status: 'Fail',

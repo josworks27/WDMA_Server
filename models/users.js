@@ -30,8 +30,10 @@ module.exports = (sequelize, DataTypes) => {
     {
       hooks: {
         afterValidate: async (data) => {
-          const hashedPassword = await bcrypt.hash(data.password, 10);
-          data.password = hashedPassword;
+          if (data.password) {
+            const hashedPassword = await bcrypt.hash(data.password, 10);
+            data.password = hashedPassword;
+          }
         },
       },
     }

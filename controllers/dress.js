@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const { dresses, images, stores, events, customers } = require('../models');
 require('dotenv').config();
 
@@ -455,8 +454,7 @@ module.exports = {
     } = req.body;
 
     const { dressId } = req.params;
-    const token = req.headers.cookie.split('token=')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { userId } = req.user;
 
     try {
       if (!eventType || !date) {
@@ -485,7 +483,7 @@ module.exports = {
             date: date,
             details: details,
             dressId: dressId,
-            userId: decoded.userId,
+            userId: userId,
             customerId: customer.dataValues.id,
           });
 
@@ -500,7 +498,7 @@ module.exports = {
             date: date,
             details: details,
             dressId: dressId,
-            userId: decoded.userId,
+            userId: userId,
             customerId: null,
           });
 
@@ -533,8 +531,7 @@ module.exports = {
     } = req.body;
 
     const { dressId, eventId } = req.params;
-    const token = req.headers.cookie.split('token=')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { userId } = req.user;
 
     try {
       if (!eventType || !date) {
@@ -569,7 +566,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
-                  userId: decoded.userId,
+                  userId: userId,
                 },
                 {
                   where: {
@@ -600,7 +597,7 @@ module.exports = {
               if (!created) {
                 await events.update(
                   {
-                    userId: decoded.userId,
+                    userId: userId,
                     customerId: customer.id,
                   },
                   {
@@ -622,7 +619,7 @@ module.exports = {
 
                 await events.update(
                   {
-                    userId: decoded.userId,
+                    userId: userId,
                     customerId: newCustomerResult.id,
                   },
                   {
@@ -652,7 +649,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
-                  userId: decoded.userId,
+                  userId: userId,
                 },
                 {
                   where: {
@@ -678,7 +675,7 @@ module.exports = {
             if (!created) {
               await events.update(
                 {
-                  userId: decoded.userId,
+                  userId: userId,
                   customerId: customer.id,
                 },
                 {
@@ -700,7 +697,7 @@ module.exports = {
 
               await events.update(
                 {
-                  userId: decoded.userId,
+                  userId: userId,
                   customerId: created.id,
                 },
                 {
@@ -735,7 +732,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
-                  userId: decoded.userId,
+                  userId: userId,
                   customerId: null,
                 },
                 {
@@ -764,7 +761,7 @@ module.exports = {
                   type: eventType,
                   date: date,
                   details: details,
-                  userId: decoded.userId,
+                  userId: userId,
                   customerId: null,
                 },
                 {
