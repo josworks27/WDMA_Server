@@ -409,8 +409,9 @@ module.exports = {
 
   // * DELETE: /dresses/:dressId
   deleteDressDetail: async (req, res) => {
-    // 드레스 삭제
     const { dressId } = req.params;
+
+    console.log(dressId);
 
     try {
       const deletedDressResult = await dresses.destroy({
@@ -433,6 +434,7 @@ module.exports = {
         });
       }
     } catch (err) {
+      console.log(err);
       res.status(500).json({
         status: 'Fail',
         code: 500,

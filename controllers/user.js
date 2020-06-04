@@ -1,13 +1,10 @@
 const bcrypt = require('bcrypt');
 const { users, stores, dresses, events, customers } = require('../models');
+const eventGroupingHelper = require('../helpers/eventGroupingHelper');
 
 module.exports = {
   // * GET: /users
   getUsers: async (req, res) => {
-    // 유저 정보 => 이메일, 이름, 소속점포
-    // 이벤트 정보 => 자신이 작성한 모든 드레스의 이벤트 내역 (최신순)
-    //    날짜(최신순), 모델(A-Z), 이벤트(최신순)
-
     const { userId } = req.user;
 
     try {
@@ -34,10 +31,14 @@ module.exports = {
           where: { userId: userId },
           order: [['date', 'DESC']],
           include: [
-            { model: dresses, attributes: ['model'] },
+            {
+              model: dresses,
+              attributes: ['model'],
+              order: [['model', 'ASC']],
+            },
             { model: customers, attributes: ['name'] },
           ],
-          attributes: ['type', 'date', 'details'],
+          attributes: ['id', 'type', 'date', 'details'],
           raw: true,
         });
 
@@ -48,11 +49,13 @@ module.exports = {
             message: 'Not found',
           });
         } else {
+          let eventDataResult = eventGroupingHelper(findEventsResult);
+
           res.status(200).json({
             status: 'Success',
             code: 200,
             userData: findUserResult,
-            eventData: findEventsResult,
+            eventData: eventDataResult,
           });
         }
       }
