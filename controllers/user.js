@@ -8,7 +8,6 @@ module.exports = {
     const { userId } = req.user;
 
     try {
-      // 유저 정보 가져오기
       const findUserResult = await users.findOne({
         where: { id: userId },
         attributes: ['email', 'name'],
@@ -18,7 +17,6 @@ module.exports = {
         },
         raw: true,
       });
-
       if (!findUserResult) {
         res.status(404).json({
           status: 'Fail',
@@ -26,7 +24,6 @@ module.exports = {
           message: 'Non-existent user',
         });
       } else {
-        // 이벤트 정보 가져오기
         const findEventsResult = await events.findAll({
           where: { userId: userId },
           order: [['date', 'DESC']],
@@ -42,22 +39,14 @@ module.exports = {
           raw: true,
         });
 
-        if (findEventsResult.length === 0) {
-          res.status(404).json({
-            status: 'Fail',
-            code: 404,
-            message: 'Not found',
-          });
-        } else {
-          let eventDataResult = eventGroupingHelper(findEventsResult);
+        const eventDataResult = eventGroupingHelper(findEventsResult);
 
-          res.status(200).json({
-            status: 'Success',
-            code: 200,
-            userData: findUserResult,
-            eventData: eventDataResult,
-          });
-        }
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          userData: findUserResult,
+          eventData: eventDataResult,
+        });
       }
     } catch (err) {
       res.status(500).json({

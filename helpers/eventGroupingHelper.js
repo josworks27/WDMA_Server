@@ -8,7 +8,10 @@ function eventGroupingHelper(data) {
       form.date = data[i].date;
     }
 
-    if (form.date === data[i].date) {
+    if (data.length === 1) {
+      form.children.push(data[i]);
+      groupedData.push(form);
+    } else if (form.date === data[i].date) {
       form.children.push(data[i]);
     } else {
       groupedData.push(form);

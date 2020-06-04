@@ -32,13 +32,16 @@ module.exports = (sequelize, DataTypes) => {
   events.associate = function (models) {
     // associations can be defined here
     events.belongsTo(models.dresses, {
-      foreignKey: 'dressId',
+      foreignKey: { name: 'dressId', allowNull: true },
+      onDelete: 'CASCADE',
     });
     events.belongsTo(models.users, {
-      foreignKey: 'userId',
+      foreignKey: { name: 'userId', allowNull: true },
+      onDelete: 'CASCADE',
     });
     events.belongsTo(models.customers, {
-      foreignKey: 'customerId',
+      foreignKey: { name: 'customerId', allowNull: true },
+      onDelete: 'CASCADE',
     });
   };
   return events;
