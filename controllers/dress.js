@@ -7,6 +7,7 @@ module.exports = {
     try {
       const dressesResult = await dresses.findAll({
         attributes: ['id', 'model'],
+        order: [['model', 'ASC']],
         include: {
           model: images,
           where: {
