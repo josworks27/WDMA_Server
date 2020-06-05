@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
   chats.associate = function (models) {
     // associations can be defined here
     chats.belongsTo(models.users, {
-      foreignKey: 'userId',
+      foreignKey: { name: 'userId', allowNull: true },
+      onDelete: 'CASCADE',
     });
   };
   return chats;

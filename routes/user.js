@@ -8,6 +8,7 @@ const userCtrl = require('../controllers/user');
 // Controller 분기하기
 userRouter.get('/', authChecker, userCtrl.getUsers);
 userRouter.put('/', authChecker, userCtrl.putUsers);
+userRouter.delete('/', authChecker, userCtrl.deleteUsers);
 userRouter.put('/password', authChecker, userCtrl.putPassword);
 
 module.exports = userRouter;

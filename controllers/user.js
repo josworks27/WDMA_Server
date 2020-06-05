@@ -108,6 +108,40 @@ module.exports = {
     }
   },
 
+  // * DELETE: /users
+  deleteUsers: async (req, res) => {
+    const { email } = req.user;
+
+    try {
+      const deleteUserResult = await users.destroy({
+        where: {
+          email: email,
+        },
+      });
+
+      if (deleteUserResult) {
+        res.status(200).json({
+          status: 'Success',
+          code: 200,
+          message: 'Account was deleted',
+        });
+      } else {
+        res.status(404).json({
+          status: 'Fail',
+          code: 404,
+          message: 'Not found',
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        status: 'Fail',
+        code: 500,
+        message: err.name,
+      });
+    }
+  },
+
   // * PUT: /users/password
   putPassword: async (req, res) => {
     const { currPassword, newPassword } = req.body;
