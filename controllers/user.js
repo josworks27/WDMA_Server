@@ -39,7 +39,11 @@ module.exports = {
           raw: true,
         });
 
+        console.log(findEventsResult);
+
         const eventDataResult = eventGroupingHelper(findEventsResult);
+
+        console.log(eventDataResult);
 
         res.status(200).json({
           status: 'Success',

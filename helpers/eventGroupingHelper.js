@@ -13,12 +13,24 @@ function eventGroupingHelper(data) {
       groupedData.push(form);
     } else if (form.date === data[i].date) {
       form.children.push(data[i]);
-    } else {
-      groupedData.push(form);
 
-      form = { date: null, children: [] };
-      form.date = data[i].date;
-      form.children.push(data[i]);
+      if (i === data.length - 1) {
+        groupedData.push(form);
+      }
+    } else if (form.data !== data[i].date) {
+      if (i === data.length - 1) {
+        groupedData.push(form);
+        form = { date: null, children: [] };
+
+        form.date = data[i].date;
+        form.children.push(data[i]);
+        groupedData.push(form);
+      } else {
+        groupedData.push(form);
+        form = { date: null, children: [] };
+        form.date = data[i].date;
+        form.children.push(data[i]);
+      }
     }
   }
   return groupedData;
