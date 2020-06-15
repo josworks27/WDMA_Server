@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { users, stores, dresses, events, customers } = require('../models');
-const eventGroupingHelper = require('../helpers/eventGroupingHelper');
+// const eventGroupingHelper = require('../helpers/eventGroupingHelper');
 
 module.exports = {
   // * GET: /users
@@ -39,17 +39,15 @@ module.exports = {
           raw: true,
         });
 
-        console.log(findEventsResult);
-
-        const eventDataResult = eventGroupingHelper(findEventsResult);
-
-        console.log(eventDataResult);
+        // const eventDataResult = eventGroupingHelper(findEventsResult);
+        // console.log(findEventsResult);
 
         res.status(200).json({
           status: 'Success',
           code: 200,
           userData: findUserResult,
-          eventData: eventDataResult,
+          // eventData: eventDataResult,
+          eventData: findEventsResult,
         });
       }
     } catch (err) {
@@ -65,8 +63,6 @@ module.exports = {
   putUsers: async (req, res) => {
     const { name, store, manager } = req.body;
     const { userId } = req.user;
-
-    console.log(req.body, userId);
 
     try {
       const findStoreResult = await stores.findOne({
@@ -137,7 +133,6 @@ module.exports = {
         });
       }
     } catch (err) {
-      console.log(err);
       res.status(500).json({
         status: 'Fail',
         code: 500,

@@ -412,8 +412,6 @@ module.exports = {
   deleteDressDetail: async (req, res) => {
     const { dressId } = req.params;
 
-    console.log(dressId);
-
     try {
       const deletedDressResult = await dresses.destroy({
         where: {
